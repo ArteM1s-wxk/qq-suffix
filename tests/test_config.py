@@ -21,3 +21,9 @@ def test_load_suffix_returns_default_on_empty_string(tmp_path):
     path = tmp_path / "config.json"
     save_suffix(path, "")
     assert load_suffix(path) == DEFAULT_SUFFIX
+
+
+def test_load_suffix_returns_default_on_non_object_json(tmp_path):
+    path = tmp_path / "config.json"
+    path.write_text("[1, 2]", encoding="utf-8")
+    assert load_suffix(path) == DEFAULT_SUFFIX

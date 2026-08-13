@@ -20,6 +20,7 @@ class Listener:
         self._is_qq_window = is_qq_window
         self._enabled = threading.Event()
         self._hook = None
+        self._hotkey = None
         self._running = False
         self._lock = threading.Lock()
 
@@ -28,6 +29,8 @@ class Listener:
             if self._hook is None:
                 self._running = True
                 self._hook = keyboard.on_press_key("enter", self._on_enter, suppress=True)
+            if self._hotkey is None:
+                self._hotkey = keyboard.add_hotkey("f8", self.toggle_enabled)
 
     def stop(self) -> None:
         with self._lock:
@@ -36,12 +39,22 @@ class Listener:
             self._hook = None
             if hook is not None:
                 keyboard.unhook(hook)
+            hotkey = self._hotkey
+            self._hotkey = None
+            if hotkey is not None:
+                keyboard.remove_hotkey(hotkey)
 
     def set_enabled(self, value: bool) -> None:
         if value:
             self._enabled.set()
         else:
             self._enabled.clear()
+
+    def toggle_enabled(self) -> None:
+        if self._enabled.is_set():
+            self._enabled.clear()
+        else:
+            self._enabled.set()
 
     @property
     def enabled(self) -> bool:

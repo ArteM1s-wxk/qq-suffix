@@ -4,7 +4,7 @@ import psutil
 import win32gui
 import win32process
 
-QQ_PROCESS_NAME = "QQ.exe"
+QQ_PROCESS_NAME: str = "QQ.exe"
 
 
 def is_qq_process(process_name: str) -> bool:

@@ -34,18 +34,21 @@ class App:
         self.status_label.grid(row=1, column=1, padx=8, pady=8, sticky="w")
 
         self.suffix_var.trace_add("write", self._on_suffix_change)
+        self.root.after(100, self._poll_status)
 
     def toggle(self) -> None:
+        self.listener.set_enabled(not self.listener.enabled)
+
+    def _poll_status(self) -> None:
         if self.listener.enabled:
-            self.listener.set_enabled(False)
-            self.status_var.set("已停止")
-            self.toggle_btn.config(text="启动")
-            self.status_label.config(fg="red")
-        else:
-            self.listener.set_enabled(True)
             self.status_var.set("运行中")
             self.toggle_btn.config(text="停止")
             self.status_label.config(fg="green")
+        else:
+            self.status_var.set("已停止")
+            self.toggle_btn.config(text="启动")
+            self.status_label.config(fg="red")
+        self.root.after(100, self._poll_status)
 
     def _on_suffix_change(self, *_args) -> None:
         save_suffix(self.config_path, self.suffix_var.get())
@@ -58,9 +61,11 @@ def main() -> None:
         is_qq_window=is_qq_foreground,
     )
     listener.start()
-    App(root, listener, CONFIG_PATH)
-    root.mainloop()
-    listener.stop()
+    try:
+        App(root, listener, CONFIG_PATH)
+        root.mainloop()
+    finally:
+        listener.stop()
 
 
 if __name__ == "__main__":
