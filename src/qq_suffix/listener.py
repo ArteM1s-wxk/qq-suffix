@@ -73,6 +73,8 @@ class Listener:
                     # 回车被全局抑制，需临时移除 hook 再补发，否则模拟的 enter 会被再次抑制。
                     keyboard.unhook(hook)
                 if should_append(self._enabled.is_set(), self._is_qq_window()):
+                    # Shift+Enter 在 QQ 里是换行，让后缀另起一行
+                    keyboard.send("shift+enter")
                     keyboard.write(self._get_suffix())
                 keyboard.send("enter")
             finally:
