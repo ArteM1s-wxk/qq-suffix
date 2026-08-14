@@ -37,16 +37,52 @@ _imm32.ImmReleaseContext.argtypes = [wintypes.HWND, ctypes.c_void_p]
 _imm32.ImmReleaseContext.restype = wintypes.BOOL
 
 _GCS_COMPSTR = 0x0008
+_GCS_RESULTSTR = 0x0800
+
+
+class _RECT(ctypes.Structure):
+    _fields_ = [
+        ("left", ctypes.c_long),
+        ("top", ctypes.c_long),
+        ("right", ctypes.c_long),
+        ("bottom", ctypes.c_long),
+    ]
+
+
+class _GUITHREADINFO(ctypes.Structure):
+    _fields_ = [
+        ("cbSize", wintypes.DWORD),
+        ("flags", wintypes.DWORD),
+        ("hwndActive", wintypes.HWND),
+        ("hwndFocus", wintypes.HWND),
+        ("hwndCapture", wintypes.HWND),
+        ("hwndMenuOwner", wintypes.HWND),
+        ("hwndMoveSize", wintypes.HWND),
+        ("hwndCaret", wintypes.HWND),
+        ("rcCaret", _RECT),
+    ]
+
+
+def _get_focus_window() -> int:
+    fg = win32gui.GetForegroundWindow()
+    tid = ctypes.windll.user32.GetWindowThreadProcessId(fg, None)
+    info = _GUITHREADINFO()
+    info.cbSize = ctypes.sizeof(_GUITHREADINFO)
+    ctypes.windll.user32.GetGUIThreadInfo(tid, ctypes.byref(info))
+    return info.hwndFocus or fg
 
 
 def is_ime_composing() -> bool:
-    """当前前台窗口的输入法是否处于组合状态（有拼音组合串/候选词未上屏）。"""
-    hwnd = win32gui.GetForegroundWindow()
+    """当前焦点窗口的输入法是否处于组合状态（有拼音组合串/候选词未上屏）。"""
+    hwnd = _get_focus_window()
     himc = _imm32.ImmGetContext(hwnd)
     if not himc:
         return False
     try:
-        size = _imm32.ImmGetCompositionStringW(himc, _GCS_COMPSTR, None, 0)
-        return size > 0
+        if _imm32.ImmGetCompositionStringW(himc, _GCS_COMPSTR, None, 0) > 0:
+            return True
+        if _imm32.ImmGetCompositionStringW(himc, _GCS_RESULTSTR, None, 0) > 0:
+            return True
+        return False
     finally:
         _imm32.ImmReleaseContext(hwnd, himc)
