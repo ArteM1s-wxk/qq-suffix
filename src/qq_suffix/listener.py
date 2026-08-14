@@ -5,6 +5,8 @@ from collections.abc import Callable
 
 import keyboard
 
+from qq_suffix.config import Config
+
 
 def should_append(enabled: bool, is_qq: bool) -> bool:
     return enabled and is_qq
@@ -13,10 +15,10 @@ def should_append(enabled: bool, is_qq: bool) -> bool:
 class Listener:
     def __init__(
         self,
-        get_suffix: Callable[[], str],
+        get_config: Callable[[], Config],
         is_qq_window: Callable[[], bool],
     ) -> None:
-        self._get_suffix = get_suffix
+        self._get_config = get_config
         self._is_qq_window = is_qq_window
         self._enabled = threading.Event()
         self._hook = None
@@ -73,9 +75,11 @@ class Listener:
                     # 回车被全局抑制，需临时移除 hook 再补发，否则模拟的 enter 会被再次抑制。
                     keyboard.unhook(hook)
                 if should_append(self._enabled.is_set(), self._is_qq_window()):
-                    # Shift+Enter 在 QQ 里是换行，让后缀另起一行
-                    keyboard.send("shift+enter")
-                    keyboard.write(self._get_suffix())
+                    config = self._get_config()
+                    if config.newline:
+                        # Shift+Enter 在 QQ 里是换行，让后缀另起一行
+                        keyboard.send("shift+enter")
+                    keyboard.write(config.suffix)
                 keyboard.send("enter")
             finally:
                 if self._running:
