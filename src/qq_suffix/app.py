@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import tkinter as tk
 from pathlib import Path
 
@@ -7,8 +8,15 @@ from qq_suffix.config import load_config, save_config
 from qq_suffix.listener import Listener
 from qq_suffix.window import is_qq_foreground
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-CONFIG_PATH = PROJECT_ROOT / "config.json"
+
+def get_base_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        # PyInstaller 打包后，config.json 放在 exe 所在目录
+        return Path(sys.executable).parent
+    return Path(__file__).resolve().parents[2]
+
+
+CONFIG_PATH = get_base_dir() / "config.json"
 
 
 class App:
