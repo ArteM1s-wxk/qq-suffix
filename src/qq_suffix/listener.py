@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import threading
+import time
 from collections.abc import Callable
 
 import keyboard
@@ -79,6 +80,8 @@ class Listener:
                     if config.newline:
                         # Shift+Enter 在 QQ 里是换行，让后缀另起一行
                         keyboard.send("shift+enter")
+                        # 等 QQ 处理完换行，避免紧随的字符注入与 shift+enter 事件交错
+                        time.sleep(0.05)
                     keyboard.write(config.suffix)
                 keyboard.send("enter")
             finally:
