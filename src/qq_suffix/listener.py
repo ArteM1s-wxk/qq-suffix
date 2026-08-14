@@ -78,8 +78,8 @@ class Listener:
                 if should_append(self._enabled.is_set(), self._is_qq_window()):
                     config = self._get_config()
                     if config.newline:
-                        # Shift+Enter 在 QQ 里是换行，让后缀另起一行
-                        keyboard.send("shift+enter")
+                        # 用右 Shift：QQ 英文输入状态下对左 Shift+Enter 换行不敏感
+                        keyboard.send("right shift+enter")
                         # 等 QQ 处理完换行，避免紧随的字符注入与 shift+enter 事件交错
                         time.sleep(0.15)
                     keyboard.write(config.suffix)
