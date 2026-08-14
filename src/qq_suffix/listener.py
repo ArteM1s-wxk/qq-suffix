@@ -6,7 +6,7 @@ from collections.abc import Callable
 
 import keyboard
 
-from qq_suffix.config import Config
+from qq_suffix.config import DEFAULT_HOTKEY, Config
 
 
 def should_append(enabled: bool, is_qq: bool) -> bool:
@@ -31,8 +31,8 @@ class Listener:
         with self._lock:
             self._running = True
             if self._send_hotkey is None:
-                # F9 发送并追加后缀（suppress 抑制 F9，无副作用）
-                self._send_hotkey = keyboard.add_hotkey("f9", self._on_send, suppress=True)
+                config = self._get_config()
+                self._send_hotkey = keyboard.add_hotkey(config.hotkey, self._on_send, suppress=True)
             if self._pause_hotkey is None:
                 self._pause_hotkey = keyboard.add_hotkey("f8", self.toggle_enabled)
 
@@ -47,6 +47,20 @@ class Listener:
             self._pause_hotkey = None
             if pause is not None:
                 keyboard.remove_hotkey(pause)
+
+    def update_hotkey(self) -> None:
+        with self._lock:
+            if self._send_hotkey is not None:
+                keyboard.remove_hotkey(self._send_hotkey)
+                self._send_hotkey = None
+            if not self._running:
+                return
+            config = self._get_config()
+            hotkey = config.hotkey or DEFAULT_HOTKEY
+            try:
+                self._send_hotkey = keyboard.add_hotkey(hotkey, self._on_send, suppress=True)
+            except (ValueError, KeyError):
+                self._send_hotkey = keyboard.add_hotkey(DEFAULT_HOTKEY, self._on_send, suppress=True)
 
     def set_enabled(self, value: bool) -> None:
         if value:

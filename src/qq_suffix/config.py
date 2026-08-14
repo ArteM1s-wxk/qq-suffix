@@ -6,12 +6,14 @@ from pathlib import Path
 
 DEFAULT_SUFFIX = "音音"
 DEFAULT_NEWLINE = True
+DEFAULT_HOTKEY = "ctrl+enter"
 
 
 @dataclass
 class Config:
     suffix: str = DEFAULT_SUFFIX
     newline: bool = DEFAULT_NEWLINE
+    hotkey: str = DEFAULT_HOTKEY
 
 
 def load_config(path: Path) -> Config:
@@ -25,16 +27,18 @@ def load_config(path: Path) -> Config:
         return Config()
     suffix = data.get("suffix")
     newline = data.get("newline", DEFAULT_NEWLINE)
+    hotkey = data.get("hotkey", DEFAULT_HOTKEY)
     return Config(
         suffix=suffix if isinstance(suffix, str) and suffix else DEFAULT_SUFFIX,
         newline=newline if isinstance(newline, bool) else DEFAULT_NEWLINE,
+        hotkey=hotkey if isinstance(hotkey, str) and hotkey else DEFAULT_HOTKEY,
     )
 
 
-def save_config(path: Path, suffix: str, newline: bool) -> None:
+def save_config(path: Path, suffix: str, newline: bool, hotkey: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     content = json.dumps(
-        {"suffix": suffix, "newline": newline},
+        {"suffix": suffix, "newline": newline, "hotkey": hotkey},
         ensure_ascii=False,
         indent=2,
     )

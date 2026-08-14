@@ -42,6 +42,7 @@ class App:
 
         self.suffix_var = tk.StringVar(value=config.suffix)
         self.newline_var = tk.BooleanVar(value=config.newline)
+        self.hotkey_var = tk.StringVar(value=config.hotkey)
         self.status_var = tk.StringVar(value="已停止")
 
         ctk.CTkLabel(root, text="后缀内容：").grid(row=0, column=0, padx=8, pady=8, sticky="w")
@@ -64,14 +65,19 @@ class App:
         )
         self.newline_check.grid(row=2, column=0, columnspan=3, padx=8, pady=8, sticky="w")
 
+        ctk.CTkLabel(root, text="发送热键：").grid(row=3, column=0, padx=8, pady=8, sticky="w")
+        self.hotkey_entry = ctk.CTkEntry(root, textvariable=self.hotkey_var, width=240)
+        self.hotkey_entry.grid(row=3, column=1, padx=8, pady=8)
+
         self._build_emoji_panel()
 
         self.suffix_var.trace_add("write", self._on_config_change)
+        self.hotkey_var.trace_add("write", self._on_hotkey_change)
         self.root.after(100, self._poll_status)
 
     def _build_emoji_panel(self) -> None:
         self.emoji_panel = ctk.CTkFrame(self.root)
-        self.emoji_panel.grid(row=3, column=0, columnspan=3, padx=8, pady=(0, 8), sticky="w")
+        self.emoji_panel.grid(row=4, column=0, columnspan=3, padx=8, pady=(0, 8), sticky="w")
         for i, emoji in enumerate(EMOJIS):
             row, col = divmod(i, 6)
             ctk.CTkButton(
@@ -108,7 +114,16 @@ class App:
         self.root.after(100, self._poll_status)
 
     def _on_config_change(self, *_args) -> None:
-        save_config(self.config_path, self.suffix_var.get(), self.newline_var.get())
+        save_config(
+            self.config_path,
+            self.suffix_var.get(),
+            self.newline_var.get(),
+            self.hotkey_var.get(),
+        )
+
+    def _on_hotkey_change(self, *_args) -> None:
+        self._on_config_change()
+        self.listener.update_hotkey()
 
 
 def main() -> None:
