@@ -7,6 +7,7 @@ dependencies = [
     "keyboard>=0.13.5",
     "pywin32>=306",
     "psutil>=5.9.0",
+    "customtkinter>=6.0.0",
 ]
 
 [dependency-groups]
