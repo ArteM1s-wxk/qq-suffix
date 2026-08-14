@@ -18,9 +18,11 @@ class Listener:
         self,
         get_config: Callable[[], Config],
         is_qq_window: Callable[[], bool],
+        is_ime_composing: Callable[[], bool],
     ) -> None:
         self._get_config = get_config
         self._is_qq_window = is_qq_window
+        self._is_ime_composing = is_ime_composing
         self._enabled = threading.Event()
         self._hook = None
         self._hotkey = None
@@ -75,7 +77,7 @@ class Listener:
                 if hook is not None:
                     # 回车被全局抑制，需临时移除 hook 再补发，否则模拟的 enter 会被再次抑制。
                     keyboard.unhook(hook)
-                if should_append(self._enabled.is_set(), self._is_qq_window()):
+                if should_append(self._enabled.is_set(), self._is_qq_window()) and not self._is_ime_composing():
                     config = self._get_config()
                     if config.newline:
                         # 用右 Shift：QQ 英文输入状态下对左 Shift+Enter 换行不敏感

@@ -8,7 +8,7 @@ import customtkinter as ctk
 
 from qq_suffix.config import load_config, save_config
 from qq_suffix.listener import Listener
-from qq_suffix.window import is_qq_foreground
+from qq_suffix.window import is_ime_composing, is_qq_foreground
 
 EMOJI_FONT = ("Segoe UI Emoji", 16)
 EMOJIS = [
@@ -117,6 +117,7 @@ def main() -> None:
     listener = Listener(
         get_config=lambda: load_config(CONFIG_PATH),
         is_qq_window=is_qq_foreground,
+        is_ime_composing=is_ime_composing,
     )
     listener.start()
     try:
