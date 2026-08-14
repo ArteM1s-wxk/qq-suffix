@@ -79,6 +79,9 @@ class Listener:
         return self._enabled.is_set()
 
     def _on_send(self) -> None:
+        # 释放被 suppress 的修饰键，避免 Ctrl 等组合键卡住
+        for modifier in ("ctrl", "shift", "alt"):
+            keyboard.release(modifier)
         if not should_append(self._enabled.is_set(), self._is_qq_window()):
             return
         config = self._get_config()

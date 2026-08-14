@@ -17,6 +17,7 @@ EMOJIS = [
     "🙏", "✨", "😎", "🤣", "🥰", "😴",
     "🤯", "🎊", "💪", "🌟", "💖", "🥳",
 ]
+HOTKEY_OPTIONS = ["ctrl+enter"] + [f"f{i}" for i in range(1, 13) if i != 8]
 
 
 def get_base_dir() -> Path:
@@ -66,13 +67,14 @@ class App:
         self.newline_check.grid(row=2, column=0, columnspan=3, padx=8, pady=8, sticky="w")
 
         ctk.CTkLabel(root, text="发送热键：").grid(row=3, column=0, padx=8, pady=8, sticky="w")
-        self.hotkey_entry = ctk.CTkEntry(root, textvariable=self.hotkey_var, width=240)
-        self.hotkey_entry.grid(row=3, column=1, padx=8, pady=8)
+        self.hotkey_menu = ctk.CTkOptionMenu(
+            root, variable=self.hotkey_var, values=HOTKEY_OPTIONS, width=240, command=self._on_hotkey_change
+        )
+        self.hotkey_menu.grid(row=3, column=1, padx=8, pady=8)
 
         self._build_emoji_panel()
 
         self.suffix_var.trace_add("write", self._on_config_change)
-        self.hotkey_var.trace_add("write", self._on_hotkey_change)
         self.root.after(100, self._poll_status)
 
     def _build_emoji_panel(self) -> None:
